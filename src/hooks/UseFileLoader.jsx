@@ -8,7 +8,8 @@ function useFileLoader() {
 
         // filter out anything that isn't audio
         const audioOnly = files.filter((file) => {
-             return file.type.startsWith("audio/")
+             return file.type.startsWith("audio/") || 
+         file.name.match(/\.(mp3|wav|aac|flac|m4a|ogg)$/i)
         });
 
         const newTracks = audioOnly.map((file) => {
