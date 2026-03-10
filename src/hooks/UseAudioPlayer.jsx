@@ -60,7 +60,7 @@ function useAudioPlayer(currentTrack) {
 		setIsPlaying(false);
 	}
 
-	return { isPlaying, duration, currentTime, play, pause, stop };
+	return { isPlaying, duration, currentTime, play, pause, stop, audioRef };
 };
 
 export default useAudioPlayer;
