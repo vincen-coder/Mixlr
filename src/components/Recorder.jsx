@@ -2,7 +2,7 @@ function Recorder({ isRecording, recordedAudio, startRecording, stopRecording })
   return (
     <div>
       {isRecording
-        ? <button className="text-blue-500" onClick={stopRecording}>Stop Recording</button>
+        ? <button className="text-red-500" onClick={stopRecording}>Stop Recording</button>
         : <button className="text-blue-500" onClick={startRecording}>Start Recording</button>
       }
 
