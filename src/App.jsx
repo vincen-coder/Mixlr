@@ -9,7 +9,6 @@ import Recorder from "./components/Recorder"
 
 function App() {
   const [currentTrack, setCurrentTrack] = useState(null)
-
   const { tracks, handleFilePicker } = useFileLoader()
   const { isPlaying, duration, currentTime, play, pause, stop, audioRef } = useAudioPlayer(currentTrack)
   const { isRecording, recordedAudio, startRecording, stopRecording } = useRecorder(audioRef)
@@ -21,30 +20,50 @@ function App() {
   }, [tracks])
 
   return (
-    <div>
-      <FileInput handleFilePicker={handleFilePicker} />
-      <p>{tracks.length} songs loaded</p>
-      <p>Now playing: {currentTrack?.name ?? "nothing selected"}</p>
-      <PlayerController
-        currentTrack={currentTrack}
-        isPlaying={isPlaying}
-        duration={duration}
-        currentTime={currentTime}
-        play={play}
-        pause={pause}
-        stop={stop}
-      />
-      <Playlist
-        tracks={tracks}
-        currentTrack={currentTrack}
-        setCurrentTrack={setCurrentTrack}
-      />
-      <Recorder
-        isRecording={isRecording}
-        recordedAudio={recordedAudio}
-        startRecording={startRecording}
-        stopRecording={stopRecording}
-      />
+    <div className="min-h-screen bg-[#0a0a0f] text-white flex flex-col items-center px-4 py-8 font-sans">
+      {/* Background atmospheric glow */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-purple-900/10 rounded-full blur-[120px]" />
+        <div className="absolute bottom-1/4 left-1/3 w-[300px] h-[300px] bg-blue-900/10 rounded-full blur-[100px]" />
+      </div>
+
+      {/* Header */}
+      <div className="w-full max-w-md mb-8 relative z-10">
+        <h1 className="text-3xl font-black tracking-tight text-white">
+          Mix<span className="text-purple-400">lr</span>
+        </h1>
+        <p className="text-zinc-500 text-xs mt-1 tracking-widest uppercase">Audio Player & Recorder</p>
+      </div>
+
+      {/* Main content */}
+      <div className="w-full max-w-md flex flex-col gap-4 relative z-10">
+        <FileInput handleFilePicker={handleFilePicker} />
+
+        {tracks.length > 0 && (
+          <>
+            <PlayerController
+              currentTrack={currentTrack}
+              isPlaying={isPlaying}
+              duration={duration}
+              currentTime={currentTime}
+              play={play}
+              pause={pause}
+              stop={stop}
+            />
+            <Playlist
+              tracks={tracks}
+              currentTrack={currentTrack}
+              setCurrentTrack={setCurrentTrack}
+            />
+            <Recorder
+              isRecording={isRecording}
+              recordedAudio={recordedAudio}
+              startRecording={startRecording}
+              stopRecording={stopRecording}
+            />
+          </>
+        )}
+      </div>
     </div>
   )
 }
