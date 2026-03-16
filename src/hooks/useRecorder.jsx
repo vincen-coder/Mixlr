@@ -4,52 +4,53 @@ function useRecorder(audioRef) {
   const [isRecording, setIsRecording] = useState(false)
   const [recordedAudio, setRecordedAudio] = useState(null)
   const [trackVolume, setTrackVolume] = useState(1)
-  
+
   const mediaRecorderRef = useRef(null)
   const audioChunksRef = useRef([])
-  const audioContextRef = useRef(null)      // keep AudioContext alive
-  const gainNodeRef = useRef(null)          // volume control node
-  const songSourceRef = useRef(null)        // keep song source alive
+  const audioContextRef = useRef(null)
+  const gainNodeRef = useRef(null)
+  const songSourceRef = useRef(null)
 
   async function startRecording() {
     try {
-      // get microphone stream
       const micStream = await navigator.mediaDevices.getUserMedia({ audio: true })
 
-      // create AudioContext and store it in ref so it stays alive
       const audioContext = new AudioContext()
       audioContextRef.current = audioContext
-
-      // resume context — mobile browsers suspend it by default
       await audioContext.resume()
 
-      // plug microphone into mixing desk
       const micSource = audioContext.createMediaStreamSource(micStream)
-
-      // plug song into mixing desk — store in ref so it stays alive
       const songSource = audioContext.createMediaElementSource(audioRef.current)
       songSourceRef.current = songSource
 
-      // create a gain node — this controls the song volume during recording
       const gainNode = audioContext.createGain()
       gainNodeRef.current = gainNode
       gainNode.gain.value = trackVolume
 
-      // create the output destination for recording
+      // boost mic so voice comes through clearly
+      const micGainNode = audioContext.createGain()
+      micGainNode.gain.value = 3
+
       const destination = audioContext.createMediaStreamDestination()
 
-      // connect everything:
-      // mic → destination (recording)
-      micSource.connect(destination)
+      micSource.connect(micGainNode)
+      micGainNode.connect(destination)
 
-      // song → gain → destination (recording)
-      // song → gain → speakers (so you can still hear it)
       songSource.connect(gainNode)
       gainNode.connect(destination)
-      gainNode.connect(audioContext.destination)  // keeps song audible
+      gainNode.connect(audioContext.destination)
 
-      // record the mixed output
-      const mediaRecorder = new MediaRecorder(destination.stream)
+      // detect format — mp4 for Safari, webm for Chrome
+      const mimeType = MediaRecorder.isTypeSupported('audio/mp4')
+        ? 'audio/mp4'
+        : MediaRecorder.isTypeSupported('audio/webm')
+        ? 'audio/webm'
+        : ''
+
+      const mediaRecorder = new MediaRecorder(
+        destination.stream,
+        mimeType ? { mimeType } : {}
+      )
       mediaRecorderRef.current = mediaRecorder
       audioChunksRef.current = []
 
@@ -60,14 +61,14 @@ function useRecorder(audioRef) {
       }
 
       mediaRecorder.onstop = () => {
-        const audioBlob = new Blob(audioChunksRef.current, { 
-          type: 'audio/webm'  // webm is better supported on mobile than wav
+        const audioBlob = new Blob(audioChunksRef.current, {
+          type: mimeType || 'audio/webm'
         })
         const audioUrl = URL.createObjectURL(audioBlob)
         setRecordedAudio(audioUrl)
       }
 
-      mediaRecorder.start(100)  // collect data every 100ms — more reliable on mobile
+      mediaRecorder.start(100)
       setIsRecording(true)
 
     } catch (error) {
@@ -82,12 +83,15 @@ function useRecorder(audioRef) {
     }
   }
 
-  // call this to change song volume during recording
   function changeTrackVolume(value) {
     setTrackVolume(value)
     if (gainNodeRef.current) {
-      gainNodeRef.current.gain.value = value  // update live during recording
+      gainNodeRef.current.gain.value = value
     }
+  }
+
+  function clearRecording() {
+    setRecordedAudio(null)
   }
 
   return {
@@ -96,7 +100,8 @@ function useRecorder(audioRef) {
     trackVolume,
     startRecording,
     stopRecording,
-    changeTrackVolume
+    changeTrackVolume,
+    clearRecording
   }
 }
 

@@ -1,4 +1,4 @@
-export default function Recorder({ isRecording, recordedAudio, trackVolume, startRecording, stopRecording, changeTrackVolume }) {
+export default function Recorder({ isRecording, recordedAudio, trackVolume, startRecording, stopRecording, changeTrackVolume, clearRecording }) {
   return (
     <div className="w-full bg-zinc-900/40 backdrop-blur-md rounded-2xl border border-zinc-800/50 p-5">
       <div className="flex items-center justify-between mb-4">
@@ -14,7 +14,6 @@ export default function Recorder({ isRecording, recordedAudio, trackVolume, star
         )}
       </div>
 
-      {/* Volume slider — only shows when recording */}
       {isRecording && (
         <div className="mb-4 p-3 bg-zinc-800/50 rounded-xl">
           <div className="flex items-center justify-between mb-2">
@@ -33,7 +32,6 @@ export default function Recorder({ isRecording, recordedAudio, trackVolume, star
         </div>
       )}
 
-      {/* Record button */}
       <button
         onClick={isRecording ? stopRecording : startRecording}
         className={`w-full py-3 rounded-xl font-semibold text-sm transition-all duration-300 active:scale-95 flex items-center justify-center gap-2 ${
@@ -47,11 +45,19 @@ export default function Recorder({ isRecording, recordedAudio, trackVolume, star
 
       {recordedAudio && (
         <div className="mt-4 p-4 bg-zinc-800/50 rounded-xl border border-zinc-700/40">
-          <p className="text-zinc-400 text-xs mb-3 font-medium uppercase tracking-wider">Your Recording</p>
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-zinc-400 text-xs font-medium uppercase tracking-wider">Your Recording</p>
+            <button
+              onClick={clearRecording}
+              className="text-zinc-600 hover:text-red-400 text-xs transition-colors"
+            >
+              ✕ Clear
+            </button>
+          </div>
           <audio controls src={recordedAudio} className="w-full mb-3" />
           
-            <a href={recordedAudio}
-            download="mixlr-recording.webm"
+           <a href={recordedAudio}
+            download="mixlr-recording"
             className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-zinc-700/50 text-zinc-300 text-sm font-medium transition-all"
           >
             Download Mix
